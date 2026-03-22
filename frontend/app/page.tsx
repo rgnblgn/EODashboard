@@ -1,4 +1,6 @@
 import { OverviewData } from "./types/overview";
+import React from "react";
+import LeakDemo from "./pages/leakPage";
 
 async function getOverview(): Promise<OverviewData> {
   const response = await fetch(
@@ -48,6 +50,8 @@ export default async function Home() {
           <div className="text-2xl font-semibold">%{data.uptime}</div>
         </div>
       </div>
+
+      <LeakDemo />
     </main>
   );
 }
