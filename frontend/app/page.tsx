@@ -1,5 +1,6 @@
 import { OverviewData } from "./types/overview";
 import React from "react";
+import { redirect } from "next/navigation";
 
 async function getOverview(): Promise<OverviewData> {
   const response = await fetch(
@@ -17,6 +18,8 @@ async function getOverview(): Promise<OverviewData> {
 }
 
 export default async function Home() {
+  redirect("/login");
+
   const data = await getOverview();
 
   return (
