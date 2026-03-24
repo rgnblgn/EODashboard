@@ -1,4 +1,4 @@
-import { OverviewData } from "./types/overview";
+import { OverviewData } from "../types/overview";
 import React from "react";
 import { redirect } from "next/navigation";
 
