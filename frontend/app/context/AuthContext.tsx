@@ -1,6 +1,14 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import {
+  AuthUser,
+  clearAuth,
+  getToken,
+  getUser,
+  setUser,
+  saveToken,
+} from "@/lib/auth-storage";
 
 interface User {
   id: number;
@@ -19,33 +27,34 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
+  const [token, setTokenState] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const storedToken = getToken();
+    const storedUser = getUser();
 
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      setTokenState(storedToken);
+      setUserState(storedUser);
     }
+    setIsLoading(false);
   }, []);
 
   const login = (token: string, user: User) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-
-    setToken(token);
+    saveToken(token);
     setUser(user);
+
+    setTokenState(token);
+    setUserState(user);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuth();
 
-    setToken(null);
-    setUser(null);
+    setTokenState(null);
+    setUserState(null);
   };
 
   return (

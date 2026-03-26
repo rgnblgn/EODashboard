@@ -1,6 +1,7 @@
 import { OverviewData } from "../types/overview";
 import React from "react";
 import { redirect } from "next/navigation";
+import { useAuth } from "./context/AuthContext";
 
 async function getOverview(): Promise<OverviewData> {
   const response = await fetch(

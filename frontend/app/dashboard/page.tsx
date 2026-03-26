@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { setUser } from "@/lib/auth-storage";
 interface User {
   id: number;
   email: string;
@@ -12,23 +13,17 @@ interface User {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user: authUser, token, logout } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (!token || !storedUser) {
+    if (!authUser || !token) {
       router.push("/login");
       return;
     }
-
-    setUser(JSON.parse(storedUser));
-  }, [router]);
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    logout();
     router.push("/login");
   };
 
@@ -36,8 +31,8 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-gray-100 p-8">
       <div className="rounded-2xl bg-white p-6 shadow">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="mt-2 text-gray-600">Hoş geldin, {user?.name}</p>
-        <p className="text-sm text-gray-500">{user?.email}</p>
+        <p className="mt-2 text-gray-600">Hoş geldin, {authUser?.name}</p>
+        <p className="text-sm text-gray-500">{authUser?.email}</p>
 
         <button
           onClick={handleLogout}
