@@ -1,22 +1,12 @@
-export interface LoginResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    token: string;
-    user: {
-      id: number;
-      email: string;
-      role: string;
-      name: string;
-    };
-  };
-}
+import { LoginResponse, User } from "@/types/auth";
+
+const API_BASE_URL = "http://localhost:5000/api";
 
 export const loginUser = async (
   email: string,
   password: string,
 ): Promise<LoginResponse> => {
-  const response = await fetch("http://localhost:5000/api/auth/login", {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -27,3 +17,18 @@ export const loginUser = async (
   const data = await response.json();
   return data;
 };
+
+export async function getMeRequest(token: string): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Unauthorized");
+  }
+
+  return response.json();
+}

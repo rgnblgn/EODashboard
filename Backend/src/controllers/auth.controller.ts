@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { users } from "../data/users";
@@ -52,4 +52,24 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const getMe = (req: Request, res: Response): void => {
+  const user = (req as any).user;
+  if (!user) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  } else {
+    res.status(200).json({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    });
+  }
+};
+
+export const logout = (req: Request, res: Response): void => {
+  // Since we're using JWTs, logout is handled on the client side by deleting the token.
+  res.status(200).json({ message: "Logout successful" });
 };

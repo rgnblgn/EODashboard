@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import {
   AuthUser,
   clearAuth,
@@ -9,19 +15,17 @@ import {
   setUser,
   saveToken,
 } from "@/lib/auth-storage";
-
-interface User {
-  id: number;
-  email: string;
-  role: string;
-  name: string;
-}
+import { User } from "../../types/auth";
+import { getMeRequest } from "@/lib/auth";
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  bootstrapAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -31,17 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const storedToken = getToken();
-    const storedUser = getUser();
-
-    if (storedToken && storedUser) {
-      setTokenState(storedToken);
-      setUserState(storedUser);
-    }
-    setIsLoading(false);
-  }, []);
-
   const login = (token: string, user: User) => {
     saveToken(token);
     setUser(user);
@@ -50,15 +43,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserState(user);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     clearAuth();
 
     setTokenState(null);
     setUserState(null);
-  };
+  }, []);
+
+  const bootstrapAuth = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const storedToken = getToken();
+      if (!storedToken) {
+        setUserState(null);
+        setTokenState(null);
+        return;
+      }
+
+      const me = await getMeRequest(storedToken);
+
+      setTokenState(storedToken);
+      setUserState(me);
+    } catch (error) {
+      console.error("bootstrapAuth error:", error);
+      logout();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [logout]);
+
+  useEffect(() => {
+    bootstrapAuth();
+  }, [bootstrapAuth]);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        logout,
+        bootstrapAuth,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

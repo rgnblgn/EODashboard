@@ -26,7 +26,7 @@ export default function LoginPage() {
         return;
       }
 
-      login(result.data.token, result.data.user);
+      login(result.data?.token as string, result.data?.user as any);
 
       router.push("/dashboard");
     } catch {
